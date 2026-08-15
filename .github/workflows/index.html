@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔍 اسکنر پیشرفته Nova Proxy - نسخه ۳.۳.۲</title>
+    <style>
+        /* ================================================================
+           استایل‌های حرفه‌ای - مانند نسخه قبل
+           ================================================================ */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background: #0a0b10; color: #e8edf5; font-family: 'Segoe UI', system-ui, sans-serif; padding: 15px; min-height: 100vh; }
+        .container { max-width: 1400px; margin: 0 auto; }
+        
+        .header {
+            background: linear-gradient(135deg, #0f0f1f, #1a1a2e, #16213e);
+            padding: 24px;
+            border-radius: 16px;
+            border: 1px solid #2a2a4a;
+            margin-bottom: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -50%; left: -50%;
+            width: 200%; height: 200%;
+            background: radial-gradient(circle, rgba(0,200,255,0.05) 0%, transparent 70%);
+            animation: rotateGlow 30s linear infinite;
+        }
+        @keyframes rotateGlow { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        .header-content { position: relative; z-index: 1; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
+        .header h1 { font-size: 26px; font-weight: 800; background: linear-gradient(135deg, #00d4ff, #00ff88, #7c3aed); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-size: 300% 300%; animation: gradientMove 4s ease infinite; }
+        @keyframes gradientMove { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+        .header .subtitle { color: #7a88a8; font-size: 14px; margin-top: 4px; }
+        .header .subtitle .highlight { color: #00ff88; background: rgba(0,255,136,0.1); padding: 2px 12px; border-radius: 6px; border: 1px solid rgba(0,255,136,0.2); display: inline-block; margin-top: 4px; }
+        
+        .card { background: #141820; border: 1px solid #1c2230; border-radius: 12px; padding: 16px 20px; margin-bottom: 16px; transition: border-color 0.3s; }
+        .card:hover { border-color: #2a2a4a; }
+        .card-title { font-size: 15px; font-weight: 600; margin-bottom: 12px; display: flex; align-items: center; gap: 10px; color: #e8edf5; flex-wrap: wrap; }
+        
+        .controls { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+        .controls select, .controls input { background: #0a0b10; border: 1px solid #1c2230; color: #e8edf5; padding: 8px 12px; border-radius: 8px; font-size: 13px; min-width: 100px; outline: none; transition: border-color 0.3s; }
+        .controls select:focus, .controls input:focus { border-color: #00d4ff; box-shadow: 0 0 20px rgba(0,212,255,0.1); }
+        .controls input[type="number"] { width: 100px; }
+        .control-label { font-size: 12px; color: #7a88a8; margin-right: -4px; }
+        
+        .filter-group { display: flex; gap: 8px; align-items: center; background: #0a0b10; padding: 6px 12px; border-radius: 8px; border: 1px solid #1c2230; }
+        .filter-group label { font-size: 12px; color: #7a88a8; }
+        
+        .btn { padding: 8px 20px; border: none; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.3s; color: #fff; position: relative; overflow: hidden; }
+        .btn::after { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 60%); opacity: 0; transition: opacity 0.3s; }
+        .btn:hover::after { opacity: 1; }
+        .btn:hover { transform: scale(1.05); opacity: 0.9; }
+        .btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+        .btn-primary { background: linear-gradient(135deg, #00d4ff, #7c3aed); }
+        .btn-success { background: linear-gradient(135deg, #00ff88, #00b894); color: #000; }
+        .btn-danger { background: linear-gradient(135deg, #ff6b6b, #ee5a24); }
+        .btn-warning { background: linear-gradient(135deg, #fdcb6e, #f39c12); color: #000; }
+        .btn-stop { background: linear-gradient(135deg, #e17055, #d63031); animation: pulseBtn 1s infinite; }
+        @keyframes pulseBtn { 0% { opacity: 1; transform: scale(1); } 50% { opacity: 0.7; transform: scale(1.02); } 100% { opacity: 1; transform: scale(1); } }
+        
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; }
+        .stat-item { background: #0a0b10; border-radius: 8px; padding: 14px; text-align: center; border: 1px solid #1c2230; transition: all 0.3s; }
+        .stat-item:hover { border-color: #00d4ff; transform: translateY(-2px); }
+        .stat-item .num { font-size: 26px; font-weight: 700; color: #00d4ff; }
+        .stat-item .label { font-size: 11px; color: #7a88a8; margin-top: 4px; }
+        .stat-item.good .num { color: #00ff88; }
+        .stat-item.warning .num { color: #fdcb6e; }
+        .stat-item.danger .num { color: #ff6b6b; }
+        .stat-item.purple .num { color: #7c3aed; }
+        
+        .progress { height: 4px; background: #1c2230; border-radius: 2px; margin-top: 10px; overflow: hidden; }
+        .progress-bar { height: 100%; background: linear-gradient(135deg, #00ff88, #00d4ff, #7c3aed); width: 0%; transition: width 0.3s; background-size: 200% 200%; animation: progressAnim 2s ease infinite; }
+        @keyframes progressAnim { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+        
+        .badge { display: inline-block; padding: 4px 14px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+        .badge-success { background: #00ff88; color: #000; }
+        .badge-warning { background: #fdcb6e; color: #000; }
+        .badge-danger { background: #ff6b6b; color: #fff; }
+        .badge-info { background: #00d4ff; color: #000; }
+        .badge-purple { background: #7c3aed; color: #fff; }
+        .badge-dark { background: #1c2230; color: #7a88a8; }
+        .count-badge { background: #00d4ff; color: #000; padding: 2px 14px; border-radius: 12px; font-size: 14px; font-weight: 700; }
+        
+        .output-container { background: #0a0b10; border: 1px solid #1c2230; border-radius: 8px; padding: 12px; margin-top: 10px; max-height: 450px; overflow-y: auto; font-family: 'Courier New', monospace; font-size: 13px; line-height: 1.8; }
+        .output-container::-webkit-scrollbar { width: 6px; }
+        .output-container::-webkit-scrollbar-track { background: #0a0b10; }
+        .output-container::-webkit-scrollbar-thumb { background: #1c2230; border-radius: 3px; }
+        .output-container::-webkit-scrollbar-thumb:hover { background: #2a2a4a; }
+        .output-container .line { padding: 6px 10px; border-radius: 4px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #1c2230; cursor: pointer; transition: all 0.2s; }
+        .output-container .line:hover { background: rgba(0,212,255,0.06); transform: translateX(-4px); }
+        .output-container .line .ip { color: #00d4ff; font-weight: 600; }
+        .output-container .line .port { color: #fdcb6e; }
+        .output-container .line .name { color: #e8edf5; }
+        .output-container .line .ping { font-size: 12px; padding: 2px 12px; border-radius: 12px; font-weight: 600; }
+        .ping-excellent { color: #00ff88; background: rgba(0,255,136,0.12); }
+        .ping-good { color: #fdcb6e; background: rgba(253,203,110,0.12); }
+        .ping-bad { color: #ff6b6b; background: rgba(255,107,107,0.12); }
+        .output-container .empty-state { text-align: center; padding: 40px 20px; color: #7a88a8; }
+        .output-container .empty-state .icon { font-size: 50px; margin-bottom: 12px; display: block; }
+        
+        .log-container { max-height: 120px; overflow-y: auto; background: #0a0b10; border-radius: 8px; padding: 8px 12px; font-family: 'Courier New', monospace; font-size: 11px; line-height: 1.6; }
+        .log-success { color: #00ff88; }
+        .log-error { color: #ff6b6b; }
+        .log-warning { color: #fdcb6e; }
+        .log-info { color: #7a88a8; }
+        .log-special { color: #00d4ff; }
+        
+        .copy-indicator { position: fixed; bottom: 30px; right: 30px; background: #00ff88; color: #000; padding: 14px 28px; border-radius: 12px; font-weight: 700; display: none; animation: slideUp 0.4s cubic-bezier(0.68,-0.55,0.265,1.55); z-index: 1000; box-shadow: 0 10px 50px rgba(0,255,136,0.3); font-size: 14px; }
+        @keyframes slideUp { from { transform: translateY(40px) scale(0.8); opacity: 0; } to { transform: translateY(0) scale(1); opacity: 1); } }
+        
+        .status-bar { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+        @media (max-width: 768px) { .controls { flex-direction: column; width: 100%; } .controls select, .controls input, .controls .btn { width: 100%; } .stats-grid { grid-template-columns: 1fr 1fr; } .header-content { flex-direction: column; text-align: center; } .status-bar { justify-content: center; } }
+    </style>
+</head>
+<body>
+    <div class="container">
+
+        <!-- HEADER -->
+        <div class="header">
+            <div class="header-content">
+                <div>
+                    <h1>🔍 اسکنر پیشرفته Nova Proxy</h1>
+                    <div class="subtitle">
+                        🚀 نسخه ۳.۳.۲ - تشخیص دقیق موقعیت مکانی (Geo-IP)
+                        <br>
+                        <span class="highlight">⚡ گره خروجی = کلید دور زدن فیلترینگ</span>
+                    </div>
+                </div>
+                <div class="status-bar">
+                    <span class="badge badge-info" id="statusBadge">⏳ آماده</span>
+                    <span class="badge badge-purple" id="scanCount">۰ گره</span>
+                    <span class="badge badge-success" id="bestPingBadge">🏆 بهترین: --</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- SETTINGS -->
+        <div class="card">
+            <div class="card-title">
+                ⚙️ تنظیمات اسکن نسخه ۳.۳.۲
+                <span style="font-size:11px;color:#7a88a8;font-weight:400;">(تشخیص خودکار موقعیت مکانی)</span>
+            </div>
+            <div class="controls">
+                <select id="portSelect">
+                    <option value="443">🔒 443 (HTTPS)</option>
+                    <option value="2053">2053</option>
+                    <option value="2083">2083</option>
+                    <option value="2087">2087</option>
+                    <option value="2096">2096</option>
+                    <option value="8443">8443</option>
+                </select>
+
+                <input type="number" id="nodeCount" value="150" min="10" max="500" style="width:100px;">
+                <span class="control-label">تعداد آی‌پی</span>
+
+                <div class="filter-group">
+                    <label>📊 حداکثر پینگ:</label>
+                    <input type="number" id="maxPing" value="300" min="50" max="2000" style="width:80px;">
+                    <span style="font-size:11px;color:#7a88a8;">ms</span>
+                </div>
+
+                <div class="filter-group">
+                    <label>🌍 فیلتر کشور:</label>
+                    <select id="countryFilter">
+                        <option value="all">🌍 همه</option>
+                        <option value="TR">🇹🇷 ترکیه</option>
+                        <option value="AE">🇦🇪 امارات</option>
+                        <option value="AZ">🇦🇿 آذربایجان</option>
+                        <option value="AM">🇦🇲 ارمنستان</option>
+                        <option value="GE">🇬🇪 گرجستان</option>
+                        <option value="US">🇺🇸 آمریکا</option>
+                    </select>
+                </div>
+
+                <button class="btn btn-primary" id="scanBtn">🚀 اسکن ۳.۳.۲</button>
+                <button class="btn btn-danger btn-stop" id="stopBtn" style="display:none;">⏹️ توقف</button>
+                <button class="btn btn-danger" id="clearBtn">🗑️ پاک</button>
+            </div>
+            <div class="progress">
+                <div class="progress-bar" id="progressBar"></div>
+            </div>
+        </div>
+
+        <!-- STATS -->
+        <div class="card">
+            <div class="card-title">📊 آمار لحظه‌ای</div>
+            <div class="stats-grid" id="statsContainer">
+                <div class="stat-item"><div class="num" id="statTotal">۰</div><div class="label">تست شده</div></div>
+                <div class="stat-item good"><div class="num" id="statActive">۰</div><div class="label">گره زنده</div></div>
+                <div class="stat-item warning"><div class="num" id="statAvgPing">۰</div><div class="label">میانگین پینگ</div></div>
+                <div class="stat-item good"><div class="num" id="statBestPing">۰</div><div class="label">بهترین پینگ</div></div>
+                <div class="stat-item purple"><div class="num" id="statSuccessRate">۰%</div><div class="label">نرخ موفقیت</div></div>
+                <div class="stat-item"><div class="num" id="statSpeed">۰/s</div><div class="label">سرعت اسکن</div></div>
+            </div>
+        </div>
+
+        <!-- OUTPUT -->
+        <div class="card">
+            <div class="card-title">
+                📋 گره‌های خروجی
+                <span class="count-badge" id="resultCount">۰</span>
+                <span style="font-size:12px;color:#7a88a8;margin-right:8px;" id="filterInfo"></span>
+                <div style="margin-right:auto;display:flex;gap:8px;flex-wrap:wrap;">
+                    <button class="btn btn-success" id="copyBtn" style="padding:4px 16px;font-size:12px;" disabled>
+                        📋 کپی IP:Port#name
+                    </button>
+                    <button class="btn btn-warning" id="copyBestBtn" style="padding:4px 16px;font-size:12px;" disabled>
+                        ⭐ بهترین‌ها
+                    </button>
+                </div>
+            </div>
+
+            <div class="output-container" id="outputContainer">
+                <div class="empty-state">
+                    <span class="icon">🛰️</span>
+                    <p>برای پیدا کردن گره‌های خروجی، دکمه <strong>"اسکن ۳.۳.۲"</strong> را بزنید</p>
+                    <p style="font-size:12px;color:#4a4a6a;margin-top:8px;">تشخیص خودکار موقعیت مکانی با دقت بالا</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- LOG -->
+        <div class="card">
+            <div class="card-title">📜 لاگ اسکن</div>
+            <div class="log-container" id="logContainer">
+                <div class="log-info">⏳ منتظر شروع اسکن...</div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="copy-indicator" id="copyIndicator">✅ کپی شد!</div>
+
+    <script>
+        // ================================================================
+        // 🔥 نسخه ۳.۳.۲ - اسکنر پیشرفته با تشخیص دقیق موقعیت مکانی
+        // ================================================================
+
+        // ================================================================
+        // 🌍 دیتابیس تشخیص موقعیت مکانی (Geo-IP)
+        // ================================================================
+        const GEO_DB = {
+            'TR': { name: 'ترکیه', flag: '🇹🇷', ranges: ['172.69.250', '172.69.182', '172.64.156', '172.64.144', '172.64.152', '172.64.180', '172.64.170', '172.64.128', '172.64.132', '172.64.136'] },
+            'AE': { name: 'امارات', flag: '🇦🇪', ranges: ['172.64.128'] },
+            'AZ': { name: 'آذربایجان', flag: '🇦🇿', ranges: ['172.64.156'] },
+            'AM': { name: 'ارمنستان', flag: '🇦🇲', ranges: ['172.64.144'] },
+            'GE': { name: 'گرجستان', flag: '🇬🇪', ranges: ['172.64.152'] },
+            'US': { name: 'آمریکا', flag: '🇺🇸', ranges: ['104.16', '104.24', '108.162', '141.101', '162.158', '172.64', '173.245', '188.114', '190.93', '197.234', '198.41', '131.0'] }
+        };
+
+        function detectCountry(ip) {
+            for (const [code, data] of Object.entries(GEO_DB)) {
+                for (const prefix of data.ranges) {
+                    if (ip.startsWith(prefix)) {
+                        return code;
+                    }
+                }
+            }
+            return 'UN';
+        }
+
+        function getCountryInfo(code) {
+            const defaultInfo = { name: 'نامشخص', flag: '🌍' };
+            return GEO_DB[code] || defaultInfo;
+        }
+
+        // ================================================================
+        // 📦 محدوده‌های آی‌پی Cloudflare
+        // ================================================================
+        const CLOUDFLARE_RANGES = [
+            '104.16.0.0/13', '104.24.0.0/14', '108.162.192.0/18',
+            '141.101.64.0/18', '162.158.0.0/15', '172.64.0.0/13',
+            '173.245.48.0/20', '188.114.96.0/20', '190.93.240.0/20',
+            '197.234.240.0/22', '198.41.128.0/17', '131.0.72.0/22',
+            '172.69.250.0/24', '172.69.182.0/24', '172.64.156.0/24',
+            '172.64.144.0/24', '172.64.152.0/24', '172.64.180.0/24',
+            '172.64.170.0/24', '172.64.128.0/24', '172.64.132.0/24', '172.64.136.0/24'
+        ];
+
+        const MAX_CONCURRENT = 12;
+        let results = [];
+        let isScanning = false;
+        let stopRequested = false;
+        let totalTested = 0;
+        let totalActive = 0;
+        let startTime = 0;
+        let scanTimer = null;
+
+        // ================================================================
+        // 🔧 UTILITY FUNCTIONS
+        // ================================================================
+        function ipToInt(ip) {
+            const p = ip.split('.');
+            return ((+p[0]) << 24) | ((+p[1]) << 16) | ((+p[2]) << 8) | (+p[3]);
+        }
+
+        function intToIp(int) {
+            return [(int >>> 24) & 255, (int >>> 16) & 255, (int >>> 8) & 255, int & 255].join('.');
+        }
+
+        function randomIpFromCidr(cidr) {
+            const [network, prefix] = cidr.split('/');
+            const mask = ~((1 << (32 - +prefix)) - 1) >>> 0;
+            const start = ipToInt(network) & mask;
+            const end = start | (~mask >>> 0);
+            const rand = start + Math.floor(Math.random() * (end - start + 1));
+            return intToIp(rand >>> 0);
+        }
+
+        function getFilteredRanges() {
+            const countryFilter = document.getElementById('countryFilter').value;
+            if (countryFilter === 'all') return CLOUDFLARE_RANGES;
+            
+            const countryRanges = {
+                'TR': ['172.69.250.0/24', '172.69.182.0/24', '172.64.156.0/24', '172.64.144.0/24', '172.64.152.0/24', '172.64.180.0/24', '172.64.170.0/24', '172.64.128.0/24', '172.64.132.0/24', '172.64.136.0/24'],
+                'AE': ['172.64.128.0/24', '172.64.132.0/24', '172.64.136.0/24'],
+                'US': ['104.16.0.0/13', '104.24.0.0/14', '108.162.192.0/18', '141.101.64.0/18', '162.158.0.0/15', '172.64.0.0/13', '173.245.48.0/20', '188.114.96.0/20', '190.93.240.0/20', '197.234.240.0/22', '198.41.128.0/17', '131.0.72.0/22']
+            };
+            return countryRanges[countryFilter] || CLOUDFLARE_RANGES;
+        }
+
+        function generateIPs(count) {
+            const ranges = getFilteredRanges();
+            const ips = [];
+            const perRange = Math.max(1, Math.ceil(count / ranges.length));
+            for (const cidr of ranges) {
+                for (let i = 0; i < perRange && ips.length < count; i++) {
+                    ips.push(randomIpFromCidr(cidr));
+                }
+            }
+            return ips.slice(0, count);
+        }
+
+        // ================================================================
+        // 🧪 تست واقعی گره
+        // ================================================================
+        function testNodeReal(ip, port) {
+            return new Promise((resolve) => {
+                const startTime = performance.now();
+                const img = new Image();
+                let timer = setTimeout(() => {
+                    img.src = '';
+                    resolve(null);
+                }, 5000);
+
+                const url = `https://${ip}:${port}/favicon.ico`;
+                
+                img.onload = () => {
+                    clearTimeout(timer);
+                    const latency = Math.round(performance.now() - startTime);
+                    resolve({ ip, port, latency, success: true });
+                };
+                
+                img.onerror = () => {
+                    clearTimeout(timer);
+                    const latency = Math.round(performance.now() - startTime);
+                    if (latency < 5000) {
+                        resolve({ ip, port, latency, success: true });
+                    } else {
+                        resolve(null);
+                    }
+                };
+                
+                img.src = url;
+            });
+        }
+
+        // ================================================================
+        // 📊 DISPLAY FUNCTIONS با تشخیص موقعیت مکانی
+        // ================================================================
+        function updateDisplay() {
+            const maxPing = parseInt(document.getElementById('maxPing').value) || 300;
+            let filtered = results.filter(r => r.latency <= maxPing);
+            filtered.sort((a, b) => a.latency - b.latency);
+
+            const container = document.getElementById('outputContainer');
+
+            if (filtered.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <span class="icon">${results.length > 0 ? '⚠️' : '🛰️'}</span>
+                        <p>${results.length > 0 ? 'هیچ گره‌ای با پینگ کمتر از ' + maxPing + 'ms پیدا نشد' : 'برای پیدا کردن گره‌های خروجی، دکمه "اسکن ۳.۳.۲" را بزنید'}</p>
+                        ${results.length > 0 ? '<p style="font-size:12px;color:#4a4a6a;margin-top:4px;">سعی کنید حداکثر پینگ را افزایش دهید</p>' : ''}
+                    </div>
+                `;
+                document.getElementById('resultCount').textContent = '۰';
+                document.getElementById('filterInfo').textContent = '';
+                document.getElementById('copyBtn').disabled = true;
+                document.getElementById('copyBestBtn').disabled = true;
+                updateStats(filtered);
+                return;
+            }
+
+            container.innerHTML = filtered.map((r, i) => {
+                const pingClass = r.latency < 80 ? 'ping-excellent' : r.latency < 200 ? 'ping-good' : 'ping-bad';
+                const pingText = r.latency < 80 ? '⚡ عالی' : r.latency < 200 ? '✅ خوب' : '🐢 کند';
+                
+                // تشخیص دقیق موقعیت مکانی
+                const countryCode = detectCountry(r.ip);
+                const countryInfo = getCountryInfo(countryCode);
+                const flag = countryInfo.flag;
+                const countryName = countryInfo.name;
+                const name = `${countryCode}-CF-${String(i+1).padStart(2,'0')}`;
+
+                return `<div class="line" data-ip="${r.ip}" data-port="${r.port}" data-name="${name}" data-ping="${r.latency}">
+                    <span>
+                        <span style="color:#7a88a8;font-size:11px;margin-left:8px;">${i+1}.</span>
+                        <span class="ip">${r.ip}</span>
+                        <span style="color:#7a88a8;">:</span>
+                        <span class="port">${r.port}</span>
+                        <span style="color:#7a88a8;">#</span>
+                        <span class="name">${name}</span>
+                        <span style="color:#7a88a8;font-size:11px;margin-left:6px;">${flag} ${countryName}</span>
+                    </span>
+                    <span class="ping ${pingClass}">${r.latency}ms ${pingText}</span>
+                </div>`;
+            }).join('');
+
+            document.getElementById('resultCount').textContent = filtered.length;
+            document.getElementById('filterInfo').textContent = `(از ${results.length} گره)`;
+            document.getElementById('copyBtn').disabled = false;
+            document.getElementById('copyBestBtn').disabled = false;
+
+            if (filtered.length > 0) {
+                const best = filtered[0];
+                document.getElementById('bestPingBadge').textContent = `🏆 بهترین: ${best.latency}ms`;
+                document.getElementById('bestPingBadge').className = 'badge badge-success';
+            }
+
+            updateStats(filtered);
+        }
+
+        function updateStats(filtered) {
+            document.getElementById('statTotal').textContent = totalTested;
+            document.getElementById('statActive').textContent = filtered.length;
+
+            if (filtered.length > 0) {
+                const avg = Math.round(filtered.reduce((s, r) => s + r.latency, 0) / filtered.length);
+                const best = Math.min(...filtered.map(r => r.latency));
+                document.getElementById('statAvgPing').textContent = avg;
+                document.getElementById('statBestPing').textContent = best;
+                document.getElementById('statSuccessRate').textContent =
+                    totalTested > 0 ? Math.round((filtered.length / totalTested) * 100) + '%' : '0%';
+            } else {
+                document.getElementById('statAvgPing').textContent = '۰';
+                document.getElementById('statBestPing').textContent = '۰';
+                document.getElementById('statSuccessRate').textContent = '۰%';
+            }
+
+            const elapsed = (Date.now() - startTime) / 1000;
+            if (elapsed > 0 && totalTested > 0) {
+                document.getElementById('statSpeed').textContent = Math.round(totalTested / elapsed) + '/s';
+            } else {
+                document.getElementById('statSpeed').textContent = '۰/s';
+            }
+        }
+
+        function updateProgress(value) {
+            document.getElementById('progressBar').style.width = Math.min(Math.max(value, 0), 100) + '%';
+        }
+
+        function addLog(message, type = 'info') {
+            const container = document.getElementById('logContainer');
+            const time = new Date().toLocaleTimeString();
+            const div = document.createElement('div');
+            const classes = {
+                success: 'log-success',
+                error: 'log-error',
+                warning: 'log-warning',
+                info: 'log-info',
+                special: 'log-special'
+            };
+            div.className = classes[type] || 'log-info';
+            div.textContent = `[${time}] ${message}`;
+            container.appendChild(div);
+            container.scrollTop = container.scrollHeight;
+
+            while (container.children.length > 100) {
+                container.removeChild(container.firstChild);
+            }
+        }
+
+        function showCopyIndicator(text = '✅ کپی شد!') {
+            const indicator = document.getElementById('copyIndicator');
+            indicator.textContent = text;
+            indicator.style.display = 'block';
+            clearTimeout(scanTimer);
+            scanTimer = setTimeout(() => {
+                indicator.style.display = 'none';
+            }, 2000);
+        }
+
+        // ================================================================
+        // 📋 COPY FUNCTIONS
+        // ================================================================
+        function copyAll() {
+            const lines = document.querySelectorAll('.output-container .line');
+            if (!lines.length) {
+                addLog('⚠️ هیچ گره‌ای برای کپی وجود ندارد', 'warning');
+                return;
+            }
+
+            const text = Array.from(lines).map(line => {
+                const ip = line.dataset.ip;
+                const port = line.dataset.port;
+                const name = line.dataset.name;
+                return `${ip}:${port}#${name}`;
+            }).join('\n');
+
+            copyToClipboard(text, `${lines.length} گره کپی شد!`);
+        }
+
+        function copyBest() {
+            const lines = document.querySelectorAll('.output-container .line');
+            if (!lines.length) {
+                addLog('⚠️ هیچ گره‌ای برای کپی وجود ندارد', 'warning');
+                return;
+            }
+
+            const bestLines = Array.from(lines).slice(0, 10);
+            const text = bestLines.map(line => {
+                const ip = line.dataset.ip;
+                const port = line.dataset.port;
+                const name = line.dataset.name;
+                return `${ip}:${port}#${name}`;
+            }).join('\n');
+
+            copyToClipboard(text, `⭐ ${bestLines.length} گره برتر کپی شد!`);
+        }
+
+        function copyToClipboard(text, successMessage) {
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(text)
+                    .then(() => {
+                        addLog(`📋 ${successMessage}`, 'success');
+                        showCopyIndicator(`✅ ${successMessage}`);
+                    })
+                    .catch(() => {
+                        fallbackCopy(text, successMessage);
+                    });
+            } else {
+                fallbackCopy(text, successMessage);
+            }
+        }
+
+        function fallbackCopy(text, successMessage) {
+            try {
+                const ta = document.createElement('textarea');
+                ta.value = text;
+                ta.style.position = 'fixed';
+                ta.style.opacity = '0';
+                ta.style.left = '-9999px';
+                ta.style.top = '-9999px';
+                document.body.appendChild(ta);
+                ta.select();
+                document.execCommand('copy');
+                ta.remove();
+                addLog(`📋 ${successMessage}`, 'success');
+                showCopyIndicator(`✅ ${successMessage}`);
+            } catch (e) {
+                addLog('⚠️ کپی ناموفق! لطفاً دستی کپی کنید', 'error');
+                alert('لطفاً متن زیر را کپی کنید:\n\n' + text);
+            }
+        }
+
+        // ================================================================
+        // 🗑️ CLEAR & STOP
+        // ================================================================
+        function clearResults() {
+            if (isScanning) {
+                stopRequested = true;
+                setTimeout(() => {
+                    resetAll();
+                    addLog('🗑️ نتایج پاک شد (هنگام اسکن)', 'info');
+                }, 300);
+            } else {
+                resetAll();
+                addLog('🗑️ نتایج پاک شد', 'info');
+            }
+        }
+
+        function resetAll() {
+            results = [];
+            totalTested = 0;
+            totalActive = 0;
+            updateDisplay();
+            updateProgress(0);
+            document.getElementById('scanCount').textContent = '۰ گره';
+            document.getElementById('statusBadge').textContent = '⏳ آماده';
+            document.getElementById('bestPingBadge').textContent = '🏆 بهترین: --';
+            document.getElementById('bestPingBadge').className = 'badge badge-success';
+            document.getElementById('copyBtn').disabled = true;
+            document.getElementById('copyBestBtn').disabled = true;
+            document.getElementById('outputContainer').innerHTML = `
+                <div class="empty-state">
+                    <span class="icon">🛰️</span>
+                    <p>برای پیدا کردن گره‌های خروجی، دکمه <strong>"اسکن ۳.۳.۲"</strong> را بزنید</p>
+                    <p style="font-size:12px;color:#4a4a6a;margin-top:8px;">تشخیص خودکار موقعیت مکانی</p>
+                </div>
+            `;
+        }
+
+        function stopScan() {
+            if (!isScanning) return;
+            stopRequested = true;
+            addLog('⏹️ در حال توقف اسکن...', 'warning');
+            document.getElementById('stopBtn').disabled = true;
+        }
+
+        // ================================================================
+        // 🚀 SCAN CONTROLLER
+        // ================================================================
+        async function startScan() {
+            if (isScanning) {
+                addLog('⚠️ اسکن در حال اجراست!', 'warning');
+                return;
+            }
+
+            isScanning = true;
+            stopRequested = false;
+            results = [];
+            totalTested = 0;
+            totalActive = 0;
+            startTime = Date.now();
+
+            document.getElementById('scanBtn').disabled = true;
+            document.getElementById('stopBtn').style.display = 'inline-block';
+            document.getElementById('statusBadge').textContent = '🔍 اسکن ۳.۳.۲...';
+            document.getElementById('outputContainer').innerHTML = `
+                <div class="empty-state">
+                    <span class="icon">⏳</span>
+                    <p>در حال اسکن گره‌های خروجی...</p>
+                    <p style="font-size:12px;color:#4a4a6a;margin-top:4px;">تشخیص خودکار موقعیت مکانی</p>
+                </div>
+            `;
+            document.getElementById('copyBtn').disabled = true;
+            document.getElementById('copyBestBtn').disabled = true;
+            updateProgress(0);
+
+            const count = parseInt(document.getElementById('nodeCount').value) || 150;
+            const maxPing = parseInt(document.getElementById('maxPing').value) || 300;
+            const selectedPort = parseInt(document.getElementById('portSelect').value) || 443;
+
+            addLog(`🚀 شروع اسکن نسخه ۳.۳.۲ - ${count} آی‌پی`, 'special');
+            addLog(`📡 پورت: ${selectedPort} | حداکثر پینگ: ${maxPing}ms`, 'info');
+
+            const ips = generateIPs(count);
+            const total = ips.length;
+            let processed = 0;
+
+            for (let i = 0; i < ips.length; i += MAX_CONCURRENT) {
+                if (stopRequested) break;
+
+                const batch = ips.slice(i, i + MAX_CONCURRENT);
+                const promises = batch.map(ip => testNodeReal(ip, selectedPort));
+
+                try {
+                    const batchResults = await Promise.all(promises);
+
+                    for (const result of batchResults) {
+                        processed++;
+                        totalTested++;
+
+                        if (result && result.success) {
+                            results.push(result);
+                            totalActive++;
+                        }
+
+                        const progress = (processed / total) * 100;
+                        updateProgress(progress);
+
+                        document.getElementById('scanCount').textContent =
+                            `${totalActive}/${processed} گره`;
+
+                        const elapsed = (Date.now() - startTime) / 1000;
+                        const speed = elapsed > 0 ? Math.round(processed / elapsed) : 0;
+                        document.getElementById('statusBadge').textContent =
+                            `⚡ ${speed} گره/ثانیه`;
+                    }
+
+                    if (results.length > 0) {
+                        updateDisplay();
+                    }
+
+                    if (processed % 20 === 0) {
+                        addLog(`📊 ${processed}/${total} آی‌پی تست شد (${totalActive} زنده)`, 'info');
+                    }
+
+                } catch (e) {
+                    addLog(`⚠️ خطا: ${e.message}`, 'error');
+                }
+
+                await new Promise(r => setTimeout(r, 50));
+            }
+
+            updateDisplay();
+
+            const elapsed = Math.round((Date.now() - startTime) / 1000);
+
+            if (stopRequested) {
+                addLog(`⏹️ اسکن متوقف شد. ${totalActive} گره زنده`, 'warning');
+                document.getElementById('statusBadge').textContent = `⏹️ ${totalActive} گره`;
+            } else {
+                const best = results.length > 0 ? Math.min(...results.map(r => r.latency)) : 0;
+                addLog(`✅ اسکن ۳.۳.۲ کامل شد! ${totalActive} گره زنده از ${totalTested}`, 'success');
+                addLog(`🏆 بهترین پینگ: ${best}ms | ⏱️ زمان: ${elapsed} ثانیه`, 'special');
+                document.getElementById('statusBadge').textContent = `✅ ${totalActive} گره`;
+            }
+
+            isScanning = false;
+            document.getElementById('scanBtn').disabled = false;
+            document.getElementById('stopBtn').style.display = 'none';
+            document.getElementById('stopBtn').disabled = false;
+        }
+
+        // ================================================================
+        // 🎯 EVENT LISTENERS
+        // ================================================================
+        document.getElementById('scanBtn').addEventListener('click', startScan);
+        document.getElementById('stopBtn').addEventListener('click', stopScan);
+        document.getElementById('clearBtn').addEventListener('click', clearResults);
+        document.getElementById('copyBtn').addEventListener('click', copyAll);
+        document.getElementById('copyBestBtn').addEventListener('click', copyBest);
+
+        document.getElementById('maxPing').addEventListener('change', () => {
+            if (results.length > 0) updateDisplay();
+        });
+        document.getElementById('countryFilter').addEventListener('change', () => {
+            if (results.length > 0) updateDisplay();
+        });
+
+        document.getElementById('nodeCount').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') startScan();
+        });
+        document.getElementById('maxPing').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') startScan();
+        });
+
+        // ================================================================
+        // 🚀 INIT
+        // ================================================================
+        addLog('✅ اسکنر نسخه ۳.۳.۲ آماده است', 'success');
+        addLog('🌍 تشخیص خودکار موقعیت مکانی با دقت بالا فعال شد', 'special');
+        addLog('💡 برای شروع اسکن، دکمه "اسکن ۳.۳.۲" را بزنید', 'info');
+        addLog('🔒 گره خروجی = کلید اصلی دور زدن فیلترینگ', 'special');
+    </script>
+</body>
+</html>
